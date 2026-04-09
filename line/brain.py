@@ -13,7 +13,10 @@ def get_ai_response(user_query):
     # 3. 讀取知識庫 (修正路徑確保讀得到)
     knowledge_context = ""
     # 這裡的路徑請根據你 docs 資料夾的位置調整，如果 docs 在 src 裡面就寫 "src/docs"
-    docs_path = "docs" 
+    # 取得 brain.py 檔案所在的目錄 (即 /line 資料夾)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    # 往上一層找 docs 資料夾
+    docs_path = os.path.join(base_dir, "..", "docs")
     
     if not os.path.exists(docs_path):
         return f"錯誤：找不到知識庫資料夾 {docs_path}"
@@ -35,7 +38,7 @@ def get_ai_response(user_query):
     # 5. 產生回答
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-1.5-flash",
             config={"system_instruction": system_instruction},
             contents=user_query
         )
