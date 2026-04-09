@@ -1,48 +1,41 @@
 import os
 import google.generativeai as genai
 
-# 1. 初始化設定 (從 Render 環境變數讀取新 Key)
-MY_GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+# =================================================
+# 1. 直接在這裡貼上你的新 API Key (硬寫進去)
+# 請確保這串字夾在引號中間，前後沒有空格
+MY_GEMINI_KEY = "AIzaSyCo4Cw_LRQLRd5tw6dd3F8GfcpSHN_mBpE" 
+# =================================================
+
 genai.configure(api_key=MY_GEMINI_KEY)
 
 def get_ai_response(user_query):
-    # 2. 定位校規知識庫 (從 /line 往上一層找 /docs)
+    # 2. 定位校規路徑
     base_dir = os.path.dirname(os.path.abspath(__file__))
     docs_path = os.path.join(base_dir, "..", "docs")
 
     knowledge_context = ""
     if not os.path.exists(docs_path):
-        return f"【系統錯誤】找不到知識庫資料夾，請檢查路徑。"
+        return f"【系統錯誤】找不到資料夾: {docs_path}"
 
     try:
-        # 讀取 docs 資料夾內所有校規文字檔
         for filename in os.listdir(docs_path):
             if filename.endswith(".txt"):
                 with open(os.path.join(docs_path, filename), "r", encoding="utf-8") as f:
                     knowledge_context += f.read() + "\n\n"
     except Exception as e:
-        return f"【系統錯誤】讀取校規失敗: {str(e)}"
+        return f"【系統錯誤】讀取失敗: {str(e)}"
 
-    # 3. 建立模型 (使用最穩定的 1.5-flash)
+    # 3. 建立模型 (使用最穩定的字串，不帶任何參數)
     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    # 4. 組合最終指令 (不使用 system_instruction 參數，避免觸發 404 錯誤)
-    # 我們把助教身分和校規直接包進 Prompt 裡面
-    full_prompt = f"""你是一位健行科技大學的親切助教。
-請嚴格根據以下提供的校園規章文本回答問題。
-如果答案不在文本中，請回答不知道。
-
-【校園規章文本開始】
-{knowledge_context}
-【校園規章文本結束】
-
-學生提出的問題：{user_query}
-"""
+    # 4. 把所有指示直接寫在 Prompt 裡
+    full_prompt = f"你是一位健行科大助教。請根據校規回答問題：\n{knowledge_context}\n\n學生問：{user_query}"
 
     try:
-        # 5. 產生回答
+        # 5. 執行生成
         response = model.generate_content(full_prompt)
         return response.text
     except Exception as e:
-        # 如果還是失敗，會噴出具體錯誤訊息
-        return f"【連線訊息】請確認金鑰是否已更新。錯誤內容: {str(e)}"
+        # 如果這樣還報錯，我們就能看到最真實的錯誤原因
+        return f"【Debug連線訊息】{str(e)}"
