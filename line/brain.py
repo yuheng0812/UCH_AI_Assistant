@@ -1,29 +1,31 @@
 import os
 import google.generativeai as genai
 
-# =================================================
-# 【測試專用】直接在這裡填入你剛申請的新 API Key
-TEST_KEY = "AIzaSyCo4Cw_LRQLRd5tw6dd3F8GfcpSHN_mBpE"
-# =================================================
-
-genai.configure(api_key=TEST_KEY)
+# 1. 初始化 (使用硬寫 Key 或環境變數都可以，建議先用環境變數)
+api_key = os.environ.get("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 
 def get_ai_response(user_query):
-    # 這裡我們完全不讀取 docs，直接問 Google 一個簡單的問題
-    # 如果這個能成功回話，就代表你的 Key 跟連線是 100% 沒問題的
-    
+    # 2. 定位校規
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    docs_path = os.path.join(base_dir, "..", "docs")
+
+    knowledge_context = ""
+    if os.path.exists(docs_path):
+        for filename in os.listdir(docs_path):
+            if filename.endswith(".txt"):
+                with open(os.path.join(docs_path, filename), "r", encoding="utf-8") as f:
+                    knowledge_context += f.read() + "\n\n"
+
+    # 3. 使用你在 VS Code 實測成功的「完整模型名稱」
+    # 這裡必須帶有 models/ 前綴
+    model = genai.GenerativeModel(model_name="models/gemini-2.5-flash")
+
+    # 4. 組合問題
+    prompt = f"你是一位健行科大助教。請根據以下校規回答問題：\n{knowledge_context}\n\n問題：{user_query}"
+
     try:
-        # 使用最基礎的模型
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        # 測試連線的指令
-        test_prompt = f"這是一個API測試。請簡短回覆我：'連線成功，我收到你的問題了：{user_query}'"
-        
-        response = model.generate_content(test_prompt)
-        
-        # 如果成功，回傳 AI 的話
-        return f"✅【測試成功】\nAI 回應：{response.text}"
-        
+        response = model.generate_content(prompt)
+        return response.text
     except Exception as e:
-        # 如果失敗，回傳最詳細的報錯內容
-        return f"❌【測試失敗】\n報錯內容：{str(e)}"
+        return f"【連線訊息】{str(e)}"
