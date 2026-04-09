@@ -38,7 +38,7 @@ def get_ai_response(user_query):
     # 5. 產生回答
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-1.5-flash",
             config={"system_instruction": system_instruction},
             contents=user_query
         )
