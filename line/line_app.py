@@ -10,8 +10,8 @@ from brain import get_ai_response
 app = Flask(__name__)
 
 # ⚠️ 請填入你剛才在 LINE 後台拿到的資訊
-LINE_CHANNEL_ACCESS_TOKEN = 'jOdN0dT28JLd0d18ukpQxml2xdX3yqexeQW/VFPt4YvTtuoIljasEDrNjobhkHOJRLOB/xHJhsbbl8ysoFV72Yx4uGsBRQDJzG4L1nZaR6kY16bA4H790FSI0xwHSUyotTxIH+tN2sa0hr/zcOhaqQdB04t89/1O/w1cDnyilFU='
-LINE_CHANNEL_SECRET = '0c113131e53f023d01c5b652a0c53331'
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN')
+LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET')
 
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
